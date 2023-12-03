@@ -7,11 +7,18 @@ import (
 )
 
 func CreateRequest(service *ServiceData, envData *EnvironmentData) (*http.Request, error) {
-	bodyString := createBodyString(service)
-	body, err := ExecuteTemplate(bodyString, envData)
-	if err != nil {
-		return nil, err
+	for k, v := range service.Body {
+		replacedValue, err := ExecuteTemplate(v, envData)
+		if err != nil {
+			return nil, err
+		}
+		if v != replacedValue {
+			service.Body[k] = replacedValue
+		}
 	}
+
+	body := createBodyString(service)
+
 	serviceUrl, err := ExecuteTemplate(service.Url, envData)
 	if err != nil {
 		return nil, err
@@ -59,39 +66,28 @@ func createBodyString(service *ServiceData) string {
 		return ""
 	}
 
-	if isFormUrlEncoded(service.Headers) {
-		var keyValuePairs []string
+	var builder BodyBuilder
+	builder = &UnknownBuilder{}
 
-		for mk, mv := range service.Body {
-			keyValuePairs = append(keyValuePairs, mk+"="+mv)
-		}
-
-		return strings.Join(keyValuePairs, "&")
+	if isFormUrlEncoded(&service.Headers) {
+		builder = &ToFormUrlEncodedBuilder{}
+	} else if isApplicationJson(&service.Headers) {
+		builder = &ToJsonBuilder{}
 	}
 
-	if isApplicationJson(service.Headers) {
-		var keyValuePairs []string
-
-		for mk, mv := range service.Body {
-			keyValuePairs = append(keyValuePairs, "\""+mk+"\": \""+mv+"\"")
-		}
-
-		return "{" + strings.Join(keyValuePairs, ",") + "}"
-	}
-
-	return ""
+	return builder.build(&service.Body)
 }
 
-func isFormUrlEncoded(headers []map[string]string) bool {
+func isFormUrlEncoded(headers *Headers) bool {
 	return isMatchingHeader(headers, "content-type", "application/x-www-form-urlencoded")
 }
 
-func isApplicationJson(headers []map[string]string) bool {
+func isApplicationJson(headers *Headers) bool {
 	return isMatchingHeader(headers, "content-type", "application/json")
 }
 
-func isMatchingHeader(headers []map[string]string, header string, headerValue string) bool {
-	for _, v := range headers {
+func isMatchingHeader(headers *Headers, header string, headerValue string) bool {
+	for _, v := range *headers {
 		for mk, mv := range v {
 			if strings.ToLower(mk) == header &&
 				strings.ToLower(mv) == headerValue {
