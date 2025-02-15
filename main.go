@@ -50,31 +50,6 @@ func main() {
 		return
 	}
 
-	// var tokenRequest Request = &TokenRequest{
-	// 	generalRequestData: GeneralRequestData{
-	// 		extendEnvironmentData: false,
-	// 		environmentData:       &environmentData,
-	// 		requestDataFilePath:   tokenRequestDataFilePath,
-	// 		responseDataFilePath:  tokenResponseDataFilePath,
-	// 	},
-	// }
-	//
-	// serviceRequest := ServiceRequest{
-	// 	generalRequestData: GeneralRequestData{
-	// 		extendEnvironmentData: true,
-	// 		environmentData:       &environmentData,
-	// 		requestDataFilePath:   serviceRequestDataFilePath,
-	// 		responseDataFilePath:  serviceResponseDataFilePath,
-	// 	},
-	// 	environmentDataExtenderFilePath: tokenResponseDataFilePath,
-	// 	previousRequest:       			 &tokenRequest,
-	// }
-	//
-	// err = serviceRequest.Request()
-	// if err != nil {
-	// 	return
-	// }
-
 	tExchangePerformer := ExchangePerformer{
 		exchangePerformable: &TokenExchangePerformer{},
 

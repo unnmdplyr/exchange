@@ -121,12 +121,20 @@ func extendEnvironmentData(environmentData *EnvironmentData, tokenDataFilePath s
 		return err
 	}
 
-	if len(tokenData.AccessToken) < 1 {
+	if len(tokenData.AccessToken) < 1 && len(tokenData.Token) < 1 {
+		fmt.Println(" ********* accessToken:", tokenData.AccessToken)
+		fmt.Println(" ********* token:", tokenData.Token)
 		fmt.Println("Token is invalid.")
 		return err
 	}
 
-	(*environmentData)["access_token"] = tokenData.AccessToken
+	if len(tokenData.AccessToken) > 0 {
+		fmt.Println("AccessToken is used.")
+		(*environmentData)["access_token"] = tokenData.AccessToken
+	} else if len(tokenData.Token) > 0 {
+		fmt.Println("Token is used.")
+		(*environmentData)["access_token"] = tokenData.Token
+	}
 
 	return nil
 }
